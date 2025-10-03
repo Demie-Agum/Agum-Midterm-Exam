@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Contacts</title>
+  <link rel="stylesheet" href="/ui/assets/style.css"/>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a class="logo" href="/ui/">📒 Phonebook</a>
+    <div class="row">
+      <a href="/ui/profile.html">Profile</a>
+      <a href="/ui/login.html" id="logout">Logout</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>New Contact</h2>
+    <div class="row">
+      <div class="input" style="flex:1">
+        <label>Name</label>
+        <input id="name" placeholder="Full name"/>
+      </div>
+      <div class="input" style="flex:1">
+        <label>Number</label>
+        <input id="number" placeholder="+123456789"/>
+      </div>
+      <div class="input" style="flex:1">
+        <label>Photo URL</label>
+        <input id="photo" placeholder="https://..."/>
+      </div>
+    </div>
+    <button class="btn" id="btnCreate">Create</button>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h2>Your Contacts</h2>
+    <table class="table">
+      <thead>
+        <tr><th>Photo</th><th>Name</th><th>Number</th><th></th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</div>
+<script src="/ui/assets/app.js"></script>
+<script>
+function requireAuth(){ if(!getToken()){ location.href='/ui/login.html'; } }
+requireAuth();
+
+async function load(){
+  try{
+    const res = await request('/contacts');
+    const rows = $('#rows');
+    rows.innerHTML = '';
+    res.data.forEach(c => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><img src="${c.contact_photo||'https://placehold.co/40x40'}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover"/></td>
+        <td><input value="${c.contact_name}" data-id="${c.id}" data-k="contact_name"/></td>
+        <td><input value="${c.contact_number}" data-id="${c.id}" data-k="contact_number"/></td>
+        <td class="row">
+          <button class="btn secondary" data-action="save" data-id="${c.id}">Save</button>
+          <button class="btn danger" data-action="delete" data-id="${c.id}">Delete</button>
+        </td>`;
+      rows.appendChild(tr);
+    });
+  }catch(e){ toast('Failed to load contacts'); }
+}
+
+$('#btnCreate').addEventListener('click', async () => {
+  const contact_name = $('#name').value.trim();
+  const contact_number = $('#number').value.trim();
+  const contact_photo = $('#photo').value.trim();
+  try{
+    await request('/contacts', {method:'POST', body:{contact_name, contact_number, contact_photo}});
+    $('#name').value=''; $('#number').value=''; $('#photo').value='';
+    await load();
+  }catch(e){ toast(e.data && e.data.error ? e.data.error : 'Create failed'); }
+});
+
+$('#rows').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button'); if(!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  if(action==='delete'){
+    try{ await request('/contacts/'+id, {method:'DELETE'}); await load(); }
+    catch(e){ toast('Delete failed'); }
+  }
+  if(action==='save'){
+    const tr = btn.closest('tr');
+    const inputs = tr.querySelectorAll('input[data-id="'+id+'"]');
+    const body = {};
+    inputs.forEach(i=> body[i.dataset.k]=i.value);
+    try{ await request('/contacts/'+id, {method:'PUT', body}); toast('Saved'); }
+    catch(e){ toast('Save failed'); }
+  }
+});
+
+$('#logout').addEventListener('click', () => { localStorage.removeItem('token'); });
+
+load();
+</script>
+</body>
+</html>

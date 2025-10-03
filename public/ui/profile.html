@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Profile</title>
+  <link rel="stylesheet" href="/ui/assets/style.css"/>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a class="logo" href="/ui/">📒 Phonebook</a>
+    <a href="/ui/contacts.html">Contacts</a>
+  </div>
+
+  <div class="card" style="max-width:560px;margin:0 auto;">
+    <h2>Your Profile</h2>
+    <div class="row" style="align-items:flex-start">
+      <img id="avatar" class="avatar" src="https://i.pravatar.cc/128" alt="avatar"/>
+      <div style="flex:1">
+        <div class="input">
+          <label>Profile Picture URL</label>
+          <input id="profile_picture" placeholder="https://..."/>
+          <div class="helper">This demo UI does not persist profile changes; add API endpoints if needed.</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnUpdate">Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/ui/assets/app.js"></script>
+<script>
+function requireAuth(){ if(!getToken()){ location.href='/ui/login.html'; } }
+requireAuth();
+$('#btnUpdate').addEventListener('click', ()=>{
+  const url = $('#profile_picture').value.trim();
+  if(url) $('#avatar').src = url; else toast('Enter a URL');
+});
+</script>
+</body>
+</html>
