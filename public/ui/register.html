@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Register</title>
+  <link rel="stylesheet" href="/ui/assets/style.css"/>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a class="logo" href="/ui/">📒 Phonebook</a>
+    <a href="/ui/login.html">Login</a>
+  </div>
+  <div class="card" style="max-width:560px;margin:0 auto;">
+    <h2>Register</h2>
+    <div class="row">
+      <div style="flex:1" class="input">
+        <label>First name</label>
+        <input id="first_name"/>
+      </div>
+      <div style="flex:1" class="input">
+        <label>Middle name</label>
+        <input id="middle_name"/>
+      </div>
+      <div style="flex:1" class="input">
+        <label>Last name</label>
+        <input id="last_name"/>
+      </div>
+    </div>
+    <div class="input">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com"/>
+    </div>
+    <div class="input">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn" id="btnRegister">Create account</button>
+    <p class="helper">After registering, you can login immediately for demo purposes. Verification UI is provided separately.</p>
+  </div>
+</div>
+<script src="/ui/assets/app.js"></script>
+<script>
+$('#btnRegister').addEventListener('click', async () => {
+  const body = {
+    first_name: $('#first_name').value.trim(),
+    middle_name: $('#middle_name').value.trim(),
+    last_name: $('#last_name').value.trim(),
+    email: $('#email').value.trim(),
+    password: $('#password').value
+  };
+  try{
+    const res = await request('/auth/register', {method:'POST', body});
+    toast('Registered. You can login now.');
+    location.href = '/ui/login.html';
+  }catch(e){ toast(e.data && e.data.error ? e.data.error : 'Registration failed'); }
+});
+</script>
+</body>
+</html>
